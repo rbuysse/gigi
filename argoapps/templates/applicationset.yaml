@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: bgd
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - cluster: dev2
+        url: https://api.dev2.chx.osecloud.com:6443
+      - cluster: uat3
+        url: https://api.uat3.chx.osecloud.com:6443
+      - cluster: uat4
+        url: https://api.uat4.chx.osecloud.com:6443
+  template:
+    metadata:
+      name: '{{`{{cluster}}`}}-bgd'
+    spec:
+      project: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+      source:
+        repoURL: https://github.com/rbuysse/gigi.git
+        path: d/guestbook
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: guestbook4
+      syncPolicy:
+        syncOptions:
+        - CreateNamespace=true
