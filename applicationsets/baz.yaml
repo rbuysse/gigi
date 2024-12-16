@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: foobar
+  namespace: openshift-gitops
+spec:
+  generators:
+  - list:
+    elements:
+      - cluster: dev2
+        cluster-url: https:/foo.bar/baz
+  template:
+    metadata:
+      name: "foobar-{{cluster"
+    spec:
+      project: cloud-engineering
+      source:
+        repoURL: "https://github.com/hp-infrastructure/application-charts-monorepo.git"
+        path: cloud-engineering/foobar/{{cluster}}
+        helm:
+          valueFiles:
+            - 'values.yaml'
+            - 'values-images.yaml'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: cloud-engineering
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
